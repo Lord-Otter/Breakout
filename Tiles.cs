@@ -23,7 +23,7 @@ namespace breakout
 
             // init defaults
             Vector2f textureSize = (Vector2f)blueSprite.Texture.Size;
-            size = new Vector2f(textureSize.X / textureSize.Y * 24, 24); // Assume all tile textures are the same size
+            size = new Vector2f(textureSize.X / textureSize.Y * 24, 24) * 1.75f; // Assume all tile textures are the same size
 
             // complete blue init
             blueSprite.Origin = 0.5f * textureSize;
@@ -53,7 +53,7 @@ namespace breakout
         {
             tiles.Clear();
             int count = 0;
-            for (int i = -2; i <= 2; i++)
+            for (int i = -1; i <= 1; i++)
             {
                 for (int j = -2; j <= 2; j++)
                 {
@@ -65,7 +65,7 @@ namespace breakout
             }
         }
 
-        public void Update(float deltaTime, List<Ball> balls)
+        public void Update(float deltaTime, List<Ball> balls, List<Powerup> powerups)
         {
             for (int i = 0; i < tiles.Count; i++)
             {
@@ -80,6 +80,10 @@ namespace breakout
                         gameManager.currentScore += 100;
                         tiles.RemoveAt(i); // this will shift all element after the i:th element back 1 index.
                         i--; // move back 1 index to correct (could also do a reverse loop instead)
+
+                        Random rng = new Random();
+                        if (rng.Next(0, 10) == 5)
+                            powerups.Add(new Powerup(position));
                     }
                 }
             }

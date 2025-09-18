@@ -20,15 +20,14 @@ namespace breakout
         public Vector2f direction = new Vector2f(0, 0);
 
         //Power Ups
-        public bool extraBounce = true;
+        public bool extraBounce = false;
 
-        public Ball(Paddle paddle)
+        public Ball(Vector2f position)
         {
             sprite = new Sprite();
-            Paddle = paddle;
 
             sprite.Texture = new Texture("assets/ball.png");
-            sprite.Position = paddle.sprite.Position - new Vector2f(0, 50);
+            sprite.Position = position;
 
             Vector2f ballTextureSize = (Vector2f)sprite.Texture.Size;
             sprite.Origin = 0.5f * ballTextureSize;

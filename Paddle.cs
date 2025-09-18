@@ -18,6 +18,8 @@ namespace breakout
         public int speed = 450;
         public Vector2f size;
 
+        public float powerupTimer = 0f;
+
         public Paddle()
         {
             sprite = new Sprite();
@@ -30,8 +32,10 @@ namespace breakout
             size = new Vector2f(paddleW, paddleH);
         }
 
-        public void update(float deltaTime, List<Ball> balls)
+        public void update(float deltaTime, List<Ball> balls, List<Powerup> powerups)
         {
+            powerupTimer -= deltaTime;
+
             Vector2f newPos = sprite.Position;
             //Player Control
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
@@ -44,14 +48,14 @@ namespace breakout
             }
 
             //Edge Collision
-            if (sprite.Position.X > Program.ScreenW - paddleW / 2)
+            if (sprite.Position.X > Program.ScreenW - size.X / 2)
             {
-                newPos.X = Program.ScreenW - paddleW / 2;
+                newPos.X = Program.ScreenW - size.X / 2;
             }
 
-            if (sprite.Position.X < paddleW / 2)
+            if (sprite.Position.X < size.X / 2)
             {
-                newPos.X = paddleW / 2;
+                newPos.X = size.X / 2;
             }
 
             // Ball collisions
@@ -71,6 +75,33 @@ namespace breakout
                     }
                 }
             }
+
+            foreach (Powerup powerup in powerups)
+            {
+                if (Collision.CircleRectangle(powerup.sprite.Position, Ball.Radius, sprite.Position, size, out _))
+                {
+                    if (powerupTimer < 0) 
+                        powerupTimer = 4f;
+                    else
+                        powerupTimer += 4f; //Förlänger powerup timern om man plockar upp flera.
+
+                    powerup.queuedForDeletion = true;
+                }
+            }
+
+            Vector2f paddleTextureSize = (Vector2f)sprite.Texture.Size;
+            if (powerupTimer > 0)
+            {
+                sprite.Scale = new Vector2f(paddleW * 1.5f / paddleTextureSize.X, paddleH * 1.5f / paddleTextureSize.Y);
+                size = new Vector2f(paddleW * 1.5f, paddleH * 1.5f);
+            }
+            else
+            {
+                sprite.Scale = new Vector2f(paddleW / paddleTextureSize.X, paddleH / paddleTextureSize.Y);
+                size = new Vector2f(paddleW, paddleH);
+            }
+
+
 
             sprite.Position = newPos;
         }

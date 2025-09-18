@@ -24,6 +24,7 @@ class Program
         gameManager.player = paddle;
 
         List<Ball> balls;
+        List<Powerup> powerups = new List<Powerup>();
 
         Tiles tiles = new Tiles();
         tiles.gameManager = gameManager;
@@ -33,10 +34,15 @@ class Program
         void ResetGame()
         {
             gameManager.gameOver = false;
-            gameManager.currentScore = 0;
-            gameManager.health = 3;
+            if (gameManager.health <= 0)
+            {
+                gameManager.currentScore = 0;
+                gameManager.health = 3;
+            }
+                
             balls = [createBall(paddle)];
             tiles.ResetGrid();
+            powerups.Clear();
         }
 
         while (window.IsOpen)
@@ -56,12 +62,20 @@ class Program
                     ball.Draw(window);
                 }
 
+                foreach (Powerup powerup in powerups)
+                {
+                    powerup.Update(deltaTime);
+                    powerup.Draw(window);
+                }
+
                 balls.RemoveAll(ball => ball.queuedForDeletion); // Remove all balls that have collided with the bottom of the screen
 
-                paddle.update(deltaTime, balls);
+                paddle.update(deltaTime, balls, powerups);
                 paddle.Draw(window);
 
-                tiles.Update(deltaTime, balls);
+                powerups.RemoveAll(powerup => powerup.queuedForDeletion);
+
+                tiles.Update(deltaTime, balls, powerups);
                 tiles.Draw(window);
 
                 gameManager.Draw(window);
@@ -93,7 +107,7 @@ class Program
                 window.Draw(gui);
 
                 gui.CharacterSize = 24;
-                gui.DisplayedString = "Press 'R' to play again";
+                gui.DisplayedString = gameManager.health == 0 ? "Press 'R' to play again" : "Press 'R' to continue";
                 gui.Position = new Vector2f(
                     (ScreenW - gui.GetGlobalBounds().Width) / 2,
                     (ScreenH - gui.GetGlobalBounds().Height) / 2 + 100
@@ -107,7 +121,7 @@ class Program
     
     public static Ball createBall(Paddle paddle)
     {
-        return new Ball(paddle) { extraBounce = false };
+        return new Ball(paddle.sprite.Position - new Vector2f(0, 50)) { extraBounce = false, Paddle = paddle };
     }
 }
 
