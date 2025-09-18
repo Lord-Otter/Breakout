@@ -9,17 +9,35 @@ namespace breakout
 {
     public class GameManager
     {
-        public int health = 3;
+        public int health;
         public int currentScore;
+        public bool gameOver;
+        public Paddle player;
+        public Text gui;
 
-        public bool gameOver = false;
+        public GameManager()
+        {
+            gui = new Text();
+            Font font = new Font("assets/future.ttf");
+            gui.Font = font;
+        }
 
         public void LoseHealth()
         {
+            health--;
             if (health <= 0)
                 gameOver = true;
+        }
 
-                health--;
+        public void Draw(RenderTarget target)
+        {
+            gui.DisplayedString = $"Health: {health}";
+            gui.Position = new Vector2f(12, 8);
+            target.Draw(gui);
+
+            gui.DisplayedString = $"Score: {currentScore}";
+            gui.Position = new Vector2f(Program.ScreenW - gui.GetGlobalBounds().Width - 12, 8);
+            target.Draw(gui);
         }
     }
 }

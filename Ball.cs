@@ -10,33 +10,32 @@ namespace breakout
     public class Ball
     {
         public Sprite sprite;
+        public Paddle Paddle;
+        public bool queuedForDeletion = false;
 
         public const float Diameter = 30f;
         public const float Radius = Diameter * 0.5f;
 
-        public float speed = 150;
-        public Vector2f direction = new Vector2f(1, -1) / MathF.Sqrt(2f);
-        Vector2f startPosition = new Vector2f(599, 799);
-
-        public Action OnFloorHit;
-
-        GameManager gameManager = new GameManager();
+        public float speed = 500;
+        public Vector2f direction = new Vector2f(0, 0);
 
         //Power Ups
         public bool extraBounce = true;
 
-        public Ball()
+        public Ball(Paddle paddle)
         {
             sprite = new Sprite();
+            Paddle = paddle;
 
             sprite.Texture = new Texture("assets/ball.png");
-            sprite.Position = startPosition;
+            sprite.Position = paddle.sprite.Position - new Vector2f(0, 50);
 
             Vector2f ballTextureSize = (Vector2f)sprite.Texture.Size;
             sprite.Origin = 0.5f * ballTextureSize;
             sprite.Scale = new Vector2f(
                 Diameter / ballTextureSize.X,
-                Diameter / ballTextureSize.Y);
+                Diameter / ballTextureSize.Y
+            );
         }
 
         public void Update(float deltaTime)
@@ -48,11 +47,11 @@ namespace breakout
             //Start
             if (direction.X == 0 && direction.Y == 0)
             {
+                sprite.Position = Paddle.sprite.Position - new Vector2f(0, 100);
+
                 if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
                 {
-                    direction.X = 1;
-                    direction.Y = -1;
-                    direction /= MathF.Sqrt(2);
+                    direction = RandomDirection();
                 }
                 else
                 {
@@ -83,7 +82,7 @@ namespace breakout
                 }
                 else
                 {
-                    LoseRound();
+                    queuedForDeletion = true;
                     return;
                 }
             }
@@ -94,7 +93,7 @@ namespace breakout
                 direction.Y *= -1;
             }
 
-            sprite.Position = newPos;            
+            sprite.Position = newPos;
         }
 
         public void Draw(RenderTarget target)
@@ -102,13 +101,17 @@ namespace breakout
             target.Draw(sprite);
         }
 
-        public void LoseRound()
+        public void Reflect(Vector2f normal) {
+            direction -= normal * (2 * (direction.X * normal.X + direction.Y * normal.Y));
+        }
+
+        public static Vector2f RandomDirection()
         {
-            gameManager.LoseHealth();
-            sprite.Position = startPosition; //Ändra så den sitter fast på paddeln
-            direction.X = 0;
-            direction.Y = 0;
-            //Reset paddle position
+            Random random = new Random();
+            return new Vector2f(
+                MathF.Cos(random.NextSingle() * MathF.PI / 2 - 3 * MathF.PI / 4),
+                MathF.Sin(random.NextSingle() * MathF.PI / 2 - 3 * MathF.PI / 4)
+            );
         }
     }
 }
