@@ -15,14 +15,22 @@ namespace breakout
         public const float Radius = Diameter * 0.5f;
 
         public float speed = 150;
-        public Vector2f direction = new Vector2f(1, 1) / MathF.Sqrt(2f);
+        public Vector2f direction = new Vector2f(1, -1) / MathF.Sqrt(2f);
+        Vector2f startPosition = new Vector2f(599, 799);
+
+        public Action OnFloorHit;
+
+        GameManager gameManager = new GameManager();
+
+        //Power Ups
+        public bool extraBounce = true;
 
         public Ball()
         {
             sprite = new Sprite();
 
             sprite.Texture = new Texture("assets/ball.png");
-            sprite.Position = new Vector2f(599, 449);
+            sprite.Position = startPosition;
 
             Vector2f ballTextureSize = (Vector2f)sprite.Texture.Size;
             sprite.Origin = 0.5f * ballTextureSize;
@@ -33,14 +41,74 @@ namespace breakout
 
         public void Update(float deltaTime)
         {
-            Vector2f newPost = sprite.Position;
-            newPost += direction * speed * deltaTime;
-            sprite.Position = newPost;
+            Vector2f newPos = sprite.Position;
+
+            newPos += direction * speed * deltaTime;
+
+            //Start
+            if (direction.X == 0 && direction.Y == 0)
+            {
+                if (Keyboard.IsKeyPressed(Keyboard.Key.Space))
+                {
+                    direction.X = 1;
+                    direction.Y = -1;
+                    direction /= MathF.Sqrt(2);
+                }
+                else
+                {
+                    return;
+                }
+            }
+
+            //Bouncing
+            if (sprite.Position.X > Program.ScreenW - Radius)
+            {
+                newPos.X = Program.ScreenW - Radius;
+                direction.X *= -1;
+            }
+
+            if (sprite.Position.X < Radius)
+            {
+                newPos.X = Radius;
+                direction.X *= -1;
+            }
+
+            if (sprite.Position.Y > Program.ScreenH - Radius)
+            {
+                if (extraBounce)
+                {
+                    newPos.Y = Program.ScreenH - Radius;
+                    direction.Y *= -1;
+                    extraBounce = false;
+                }
+                else
+                {
+                    LoseRound();
+                    return;
+                }
+            }
+
+            if (sprite.Position.Y < Radius)
+            {
+                newPos.Y = Radius;
+                direction.Y *= -1;
+            }
+
+            sprite.Position = newPos;            
         }
 
         public void Draw(RenderTarget target)
         {
             target.Draw(sprite);
+        }
+
+        public void LoseRound()
+        {
+            gameManager.LoseHealth();
+            sprite.Position = startPosition; //Ändra så den sitter fast på paddeln
+            direction.X = 0;
+            direction.Y = 0;
+            //Reset paddle position
         }
     }
 }

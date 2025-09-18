@@ -17,14 +17,29 @@ class Program
 
         Clock clock = new Clock();
         Ball ball = new Ball();
+        Paddle paddle = new Paddle();
+
+        GameManager gameManager = new GameManager();
 
         while (window.IsOpen)
         {
             window.DispatchEvents();
             float deltaTime = clock.Restart().AsSeconds();
-            ball.Update(deltaTime);
             window.Clear(new Color(100, 100, 100));
-            ball.Draw(window);
+
+            if (!gameManager.gameOver)
+            {
+                ball.Update(deltaTime);
+                ball.Draw(window);
+
+                paddle.update(deltaTime);
+                paddle.Draw(window);
+            }
+            else
+            {
+                //Show game over screen, final score, etc.
+            }
+
             window.Display();
         }
     }
